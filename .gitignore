@@ -1,0 +1,8 @@
+# mac
+.DS_Store
+*.log
+*.gz
+*.sh
+*.py
+Secrets.h
+build/
