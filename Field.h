@@ -72,7 +72,7 @@ String getFieldsJson(FieldList fields, uint8_t count) {
 
     json += "{\"name\":\"" + field.name + "\",\"label\":\"" + field.label + "\",\"type\":\"" + field.type + "\"";
 
-    if(field.getValue) {
+    if (field.getValue) {
       if (field.type == ColorFieldType || field.type == "String") {
         json += ",\"value\":\"" + field.getValue() + "\"";
       }

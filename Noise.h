@@ -21,7 +21,7 @@ uint16_t noisex;
 uint16_t noisey;
 uint16_t noisez;
 
-// Speed determines how fast time moves forward.  Try 1 for a very slow moving effect, 
+// Speed determines how fast time moves forward.  Try 1 for a very slow moving effect,
 // or 60 for something that ends up looking like water.
 int noisespeedx = 0;
 int noisespeedy = 1;
@@ -61,7 +61,7 @@ void SetupBlackAndBlueStripedPalette()
   // 'black out' all 16 palette entries...
   fill_solid( blackAndBlueStripedPalette, 16, CRGB::Black);
 
-  for(uint8_t i = 0; i < 6; i++) {
+  for (uint8_t i = 0; i < 6; i++) {
     blackAndBlueStripedPalette[i] = CRGB::Blue;
   }
 }

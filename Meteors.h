@@ -19,7 +19,7 @@ uint8_t getMeteorLedIndexAndUpdate(uint8_t meteorIndex) {
       meteor.angle = random8();
     }
     else if (meteor.level == levelCount) {
-      if(random16() > 30000) {
+      if (random16() > 30000) {
         meteor.level = levelCount - 1;
       }
     }
@@ -41,7 +41,7 @@ void whiteMeteors() {
     for (uint8_t meteorIndex = 0; meteorIndex < meteorCount; meteorIndex++) {
       uint16_t i = getMeteorLedIndexAndUpdate(meteorIndex);
 
-      if(i < NUM_LEDS) {
+      if (i < NUM_LEDS) {
         leds[i] = CRGB(255, 255, 255);
       }
     }
@@ -54,7 +54,7 @@ void paletteMeteors() {
   for (uint8_t meteorIndex = 0; meteorIndex < meteorCount; meteorIndex++) {
     uint16_t i = getMeteorLedIndexAndUpdate(meteorIndex);
 
-    if(i < NUM_LEDS) {
+    if (i < NUM_LEDS) {
       leds[i] = ColorFromPalette(gCurrentPalette, gHue);
     }
   }
@@ -66,7 +66,7 @@ void rainbowMeteors() {
   for (uint8_t meteorIndex = 0; meteorIndex < meteorCount; meteorIndex++) {
     uint16_t i = getMeteorLedIndexAndUpdate(meteorIndex);
 
-    if(i < NUM_LEDS) {
+    if (i < NUM_LEDS) {
       leds[i] = CHSV(gHue, 255, 255);
     }
   }

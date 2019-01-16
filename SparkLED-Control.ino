@@ -50,7 +50,7 @@ extern "C" {
 //
 i2cEncoderLibV2 Encoder(0x01);
 Adafruit_SSD1306 display(-1); // -1 = No reset pin (resetpin not used for 4-pin Module)
-byte menuitem = 1, frame = 1, page = 1, lastMenuItem = 1,tempArray[6]={0,200,255,255,255,255};
+byte menuitem = 1, frame = 1, page = 1, lastMenuItem = 1, tempArray[6] = {0, 200, 255, 255, 255, 255};
 bool up = false, down = false, middle = false;
 const int IntPin = 12;
 
@@ -68,6 +68,9 @@ const int IntPin = 12;
 //IRrecv irReceiver(RECV_PIN);
 
 //#include "Commands.h"
+
+// AP mode enabled
+bool apMode = false;
 
 #include "Secrets.h" // this file is intentionally not included in the sketch, so nobody accidentally commits their secret information.
 // create a Secrets.h file with the following:
@@ -91,9 +94,9 @@ ESP8266HTTPUpdateServer httpUpdateServer;
 // #define LED_TYPE      WS2812 //for WS2812 strips
 #define COLOR_ORDER   RGB
 // #define COLOR_ORDER   GRB //for WS2812 strips
-#define NUM_LEDS      300
+#define NUM_LEDS      102
 
-#define MILLI_AMPS         18000     // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
+#define MILLI_AMPS         8000     // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
 #define FRAMES_PER_SECOND  120// here you can control the speed. With the Access Point / Web Server the animations run a bit slower.
 
 #include "Map.h"
@@ -261,8 +264,8 @@ const uint8_t patternCount = ARRAY_SIZE(patterns);
 
 
 void setup() {
-  displayInit();
-  rotaryInit();
+  //displayInit();
+  //rotaryInit();
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   pinMode(IntPin, INPUT);
   //attachInterrupt(IntPin, rotaryInt, FALLING);
@@ -278,7 +281,7 @@ void setup() {
   FastLED.setMaxPowerInVoltsAndMilliamps(5, MILLI_AMPS);
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
-  
+
   EEPROM.begin(512);
   loadSettings();
 
@@ -294,7 +297,7 @@ void setup() {
       RMOD_X1= Encoder configured as X1.
       RGB_ENCODER= type of encoder is RGB, change to STD_ENCODER in case you are using a normal rotary encoder.
   */
-   
+
   Serial.println();
   Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
   Serial.print( F("Boot Vers: ") ); Serial.println(system_get_boot_version());
@@ -347,7 +350,7 @@ void setup() {
     String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
                    String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
     macID.toUpperCase();
-    String AP_NameString = "ESP8266-" + macID;
+    String AP_NameString = "SparkLED Control ID: " + macID;
 
     char AP_NameChar[AP_NameString.length() + 1];
     memset(AP_NameChar, 0, AP_NameString.length() + 1);
@@ -386,7 +389,7 @@ void setup() {
     String name = webServer.arg("name");
     String value = webServer.arg("value");
     String newValue = setFieldValue(name, value, fields, fieldCount);
-    webServer.send(200, "text/json", newValue); 
+    webServer.send(200, "text/json", newValue);
   });
 
   webServer.on("/power", HTTP_POST, []() {
@@ -414,7 +417,7 @@ void setup() {
     speed = value.toInt();
     broadcastInt("speed", speed);
     sendInt(speed);
-    updateMenu(1);
+    //updateMenu(1);
   });
 
   webServer.on("/twinkleSpeed", HTTP_POST, []() {
@@ -447,21 +450,21 @@ void setup() {
     String value = webServer.arg("value");
     setPattern(value.toInt());
     sendInt(currentPatternIndex);
-    updateMenu(0);
+    //updateMenu(0);
   });
 
   webServer.on("/patternName", HTTP_POST, []() {
     String value = webServer.arg("value");
     setPatternName(value);
     sendInt(currentPatternIndex);
-    updateMenu(0);  
+    //updateMenu(0);
   });
 
   webServer.on("/brightness", HTTP_POST, []() {
     String value = webServer.arg("value");
     setBrightness(value.toInt());
     sendInt(brightness);
-    updateMenu(2);
+    //updateMenu(2);
   });
 
   webServer.on("/autoplay", HTTP_POST, []() {
@@ -503,8 +506,8 @@ void setup() {
 
   autoPlayTimeout = millis() + (autoplayDuration * 1000);
   // SETUP - MenuSystem end portion
-  drawMenu();
-  Encoder.writeFadeRGB(0);
+  //drawMenu();
+  //Encoder.writeFadeRGB(0);
 }
 
 void sendInt(uint8_t value)
@@ -557,22 +560,23 @@ void loop() {
     //    paletteIndex = addmod8( paletteIndex, 1, paletteCount);
     //    targetPalette = palettes[paletteIndex];
   }
-  
-  EVERY_N_MILLISECONDS(40) {
-    syncRotaryRGB();
-  }
+
+
+  //syncRotaryRGB();
+
 
   EVERY_N_MILLISECONDS(40) {
     // slowly blend the current palette to the next
     nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 8);
     //    nblendPaletteTowardPalette(currentPalette, targetPalette, 16);
     gHue++;  // slowly cycle the "base color" through the rainbow
+    //syncRotaryRGB();
   }
 
   if (autoplay && (millis() > autoPlayTimeout)) {
     adjustPattern(true);
     autoPlayTimeout = millis() + (autoplayDuration * 1000);
-    
+
   }
 
   // Call the current pattern function once, updating the 'leds' array
@@ -581,27 +585,28 @@ void loop() {
   FastLED.show();
 
   // insert a delay to keep the framerate modest
-  // FastLED.delay(1000 / FRAMES_PER_SECOND);
+  FastLED.delay(1000 / FRAMES_PER_SECOND);
 
-  if (digitalRead(IntPin) == LOW) {
-    if ( Encoder.updateStatus()) {
-       if ( Encoder.readStatus(RINC)) {
-        up = true;
-         }
-       else if ( Encoder.readStatus(RDEC)) {
-         down = true;
-         }
-       else if ( Encoder.readStatus(PUSHR)) {
-         middle = true;
-          }
-    }
-  }
-  
-  if(up == true || down == true || middle == true)
+  /*
+    if (digitalRead(IntPin) == LOW) {
+      if ( Encoder.updateStatus()) {
+         if ( Encoder.readStatus(RINC)) {
+          up = true;
+           }
+         else if ( Encoder.readStatus(RDEC)) {
+           down = true;
+           }
+         else if ( Encoder.readStatus(PUSHR)) {
+           middle = true;
+            }
+      }
+    }  */
+
+  if (up == true || down == true || middle == true)
   {
     processEncoder();
     drawMenu();
-  } 
+  }
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {

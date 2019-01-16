@@ -101,11 +101,11 @@ CRGBPalette16 twinkleFoxPalette;
 
 uint8_t attackDecayWave8( uint8_t i)
 {
-  if( i < 86) {
+  if ( i < 86) {
     return i * 3;
   } else {
     i -= 86;
-    return 255 - (i + (i/2));
+    return 255 - (i + (i / 2));
   }
 }
 
@@ -114,7 +114,7 @@ uint8_t attackDecayWave8( uint8_t i)
 // way that incandescent bulbs fade toward 'red' as they dim.
 void coolLikeIncandescent( CRGB& c, uint8_t phase)
 {
-  if( phase < 128) return;
+  if ( phase < 128) return;
 
   uint8_t cooling = (phase - 128) >> 4;
   c.g = qsub8( c.g, cooling);
@@ -132,7 +132,7 @@ void coolLikeIncandescent( CRGB& c, uint8_t phase)
 //  should light at all during this cycle, based on the twinkleDensity.
 CRGB computeOneTwinkle( uint32_t ms, uint8_t salt)
 {
-  uint16_t ticks = ms >> (8-twinkleSpeed);
+  uint16_t ticks = ms >> (8 - twinkleSpeed);
   uint8_t fastcycle8 = ticks;
   uint16_t slowcycle16 = (ticks >> 8) + salt;
   slowcycle16 += sin8( slowcycle16);
@@ -140,15 +140,15 @@ CRGB computeOneTwinkle( uint32_t ms, uint8_t salt)
   uint8_t slowcycle8 = (slowcycle16 & 0xFF) + (slowcycle16 >> 8);
 
   uint8_t bright = 0;
-  if( ((slowcycle8 & 0x0E)/2) < twinkleDensity) {
+  if ( ((slowcycle8 & 0x0E) / 2) < twinkleDensity) {
     bright = attackDecayWave8( fastcycle8);
   }
 
   uint8_t hue = slowcycle8 - salt;
   CRGB c;
-  if( bright > 0) {
+  if ( bright > 0) {
     c = ColorFromPalette( twinkleFoxPalette, hue, bright, NOBLEND);
-    if( COOL_LIKE_INCANDESCENT == 1 ) {
+    if ( COOL_LIKE_INCANDESCENT == 1 ) {
       coolLikeIncandescent( c, fastcycle8);
     }
   } else {
@@ -177,13 +177,13 @@ void drawTwinkles()
   // the current palette are identical, then a deeply faded version of
   // that color is used for the background color
   CRGB bg;
-  if( (AUTO_SELECT_BACKGROUND_COLOR == 1) &&
-      (twinkleFoxPalette[0] == twinkleFoxPalette[1] )) {
+  if ( (AUTO_SELECT_BACKGROUND_COLOR == 1) &&
+       (twinkleFoxPalette[0] == twinkleFoxPalette[1] )) {
     bg = twinkleFoxPalette[0];
     uint8_t bglight = bg.getAverageLight();
-    if( bglight > 64) {
+    if ( bglight > 64) {
       bg.nscale8_video( 16); // very bright, so scale to 1/16th
-    } else if( bglight > 16) {
+    } else if ( bglight > 16) {
       bg.nscale8_video( 64); // not that bright, so scale to 1/4th
     } else {
       bg.nscale8_video( 86); // dim, scale to 1/3rd.
@@ -194,14 +194,14 @@ void drawTwinkles()
 
   uint8_t backgroundBrightness = bg.getAverageLight();
 
-  for(uint16_t i = 0; i < NUM_LEDS; i++) {
+  for (uint16_t i = 0; i < NUM_LEDS; i++) {
     CRGB& pixel = leds[i];
 
     PRNG16 = (uint16_t)(PRNG16 * 2053) + 1384; // next 'random' number
-    uint16_t myclockoffset16= PRNG16; // use that number as clock offset
+    uint16_t myclockoffset16 = PRNG16; // use that number as clock offset
     PRNG16 = (uint16_t)(PRNG16 * 2053) + 1384; // next 'random' number
     // use that number as clock speed adjustment factor (in 8ths, from 8/8ths to 23/8ths)
-    uint8_t myspeedmultiplierQ5_3 =  ((((PRNG16 & 0xFF)>>4) + (PRNG16 & 0x0F)) & 0x0F) + 0x08;
+    uint8_t myspeedmultiplierQ5_3 =  ((((PRNG16 & 0xFF) >> 4) + (PRNG16 & 0x0F)) & 0x0F) + 0x08;
     uint32_t myclock30 = (uint32_t)((clock32 * myspeedmultiplierQ5_3) >> 3) + myclockoffset16;
     uint8_t  myunique8 = PRNG16 >> 8; // get 'salt' value for this pixel
 
@@ -212,11 +212,11 @@ void drawTwinkles()
 
     uint8_t cbright = c.getAverageLight();
     int16_t deltabright = cbright - backgroundBrightness;
-    if( deltabright >= 32 || (!bg)) {
+    if ( deltabright >= 32 || (!bg)) {
       // If the new pixel is significantly brighter than the background color,
       // use the new color.
       pixel = c;
-    } else if( deltabright > 0 ) {
+    } else if ( deltabright > 0 ) {
       // If the new pixel is just slightly brighter than the background color,
       // mix a blend of the new color and the background color
       pixel = blend( bg, c, deltabright * 8);
@@ -231,52 +231,57 @@ void drawTwinkles()
 // A mostly red palette with green accents and white trim.
 // "CRGB::Gray" is used as white to keep the brightness more uniform.
 const TProgmemRGBPalette16 RedGreenWhite_p FL_PROGMEM =
-{  CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
-   CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
-   CRGB::Red, CRGB::Red, CRGB::Gray, CRGB::Gray,
-   CRGB::Green, CRGB::Green, CRGB::Green, CRGB::Green };
+{ CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
+  CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
+  CRGB::Red, CRGB::Red, CRGB::Gray, CRGB::Gray,
+  CRGB::Green, CRGB::Green, CRGB::Green, CRGB::Green
+};
 
 // A mostly (dark) green palette with red berries.
 #define Holly_Green 0x00580c
 #define Holly_Red   0xB00402
 const TProgmemRGBPalette16 Holly_p FL_PROGMEM =
-{  Holly_Green, Holly_Green, Holly_Green, Holly_Green,
-   Holly_Green, Holly_Green, Holly_Green, Holly_Green,
-   Holly_Green, Holly_Green, Holly_Green, Holly_Green,
-   Holly_Green, Holly_Green, Holly_Green, Holly_Red
+{ Holly_Green, Holly_Green, Holly_Green, Holly_Green,
+  Holly_Green, Holly_Green, Holly_Green, Holly_Green,
+  Holly_Green, Holly_Green, Holly_Green, Holly_Green,
+  Holly_Green, Holly_Green, Holly_Green, Holly_Red
 };
 
 // A red and white striped palette
 // "CRGB::Gray" is used as white to keep the brightness more uniform.
 const TProgmemRGBPalette16 RedWhite_p FL_PROGMEM =
-{  CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray,
-   CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray,
-   CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray,
-   CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray };
+{ CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray,
+  CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray,
+  CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray,
+  CRGB::Red,  CRGB::Red,  CRGB::Gray, CRGB::Gray
+};
 
 // A mostly blue palette with white accents.
 // "CRGB::Gray" is used as white to keep the brightness more uniform.
 const TProgmemRGBPalette16 BlueWhite_p FL_PROGMEM =
-{  CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
-   CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
-   CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
-   CRGB::Blue, CRGB::Gray, CRGB::Gray, CRGB::Gray };
+{ CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
+  CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
+  CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
+  CRGB::Blue, CRGB::Gray, CRGB::Gray, CRGB::Gray
+};
 
 // A pure "fairy light" palette with some brightness variations
 #define HALFFAIRY ((CRGB::FairyLight & 0xFEFEFE) / 2)
 #define QUARTERFAIRY ((CRGB::FairyLight & 0xFCFCFC) / 4)
 const TProgmemRGBPalette16 FairyLight_p FL_PROGMEM =
-{  CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight,
-   HALFFAIRY,        HALFFAIRY,        CRGB::FairyLight, CRGB::FairyLight,
-   QUARTERFAIRY,     QUARTERFAIRY,     CRGB::FairyLight, CRGB::FairyLight,
-   CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight };
+{ CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight,
+  HALFFAIRY,        HALFFAIRY,        CRGB::FairyLight, CRGB::FairyLight,
+  QUARTERFAIRY,     QUARTERFAIRY,     CRGB::FairyLight, CRGB::FairyLight,
+  CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight
+};
 
 // A palette of soft snowflakes with the occasional bright one
 const TProgmemRGBPalette16 Snow_p FL_PROGMEM =
-{  0x304048, 0x304048, 0x304048, 0x304048,
-   0x304048, 0x304048, 0x304048, 0x304048,
-   0x304048, 0x304048, 0x304048, 0x304048,
-   0x304048, 0x304048, 0x304048, 0xE0F0FF };
+{ 0x304048, 0x304048, 0x304048, 0x304048,
+  0x304048, 0x304048, 0x304048, 0x304048,
+  0x304048, 0x304048, 0x304048, 0x304048,
+  0x304048, 0x304048, 0x304048, 0xE0F0FF
+};
 
 // A palette reminiscent of large 'old-school' C9-size tree lights
 // in the five classic colors: red, orange, green, blue, and white.
@@ -286,11 +291,11 @@ const TProgmemRGBPalette16 Snow_p FL_PROGMEM =
 #define C9_Blue   0x070758
 #define C9_White  0x606820
 const TProgmemRGBPalette16 RetroC9_p FL_PROGMEM =
-{  C9_Red,    C9_Orange, C9_Red,    C9_Orange,
-   C9_Orange, C9_Red,    C9_Orange, C9_Red,
-   C9_Green,  C9_Green,  C9_Green,  C9_Green,
-   C9_Blue,   C9_Blue,   C9_Blue,
-   C9_White
+{ C9_Red,    C9_Orange, C9_Red,    C9_Orange,
+  C9_Orange, C9_Red,    C9_Orange, C9_Red,
+  C9_Green,  C9_Green,  C9_Green,  C9_Green,
+  C9_Blue,   C9_Blue,   C9_Blue,
+  C9_White
 };
 
 // A cold, icy pale blue palette
